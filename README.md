@@ -1,5 +1,7 @@
 FITNESS YUG
 
+DEMO:- https://fitnessyug.vercel.app/
+
 **Fitness Yug** is a modern full-stack gym website built using React, Tailwind CSS, Node.js, Express.js, and SQLite. It allows users to explore fitness programs, membership plans, and submit membership requests.
 
 ## Features
