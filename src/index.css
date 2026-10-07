@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ──────────────────────────────── */
+:root {
+  --neon: #c8f743;
+}
+
+/* ── Global ─────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #0d0d0d;
+  color: #e0e0e0;
+  font-family: "Montserrat", sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Teko", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* ── Utility Classes ─────────────────────────────── */
+.text-neon { color: var(--neon); }
+
+.btn-neon {
+  background-color: var(--neon);
+  color: #000;
+  font-family: "Teko", sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.7rem 2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.btn-neon:hover {
+  box-shadow: 0 0 20px var(--neon), 0 0 40px rgba(200,247,67,0.3);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  border: 2px solid var(--neon);
+  color: var(--neon);
+  font-family: "Teko", sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.65rem 2rem;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 0.3s;
+}
+.btn-outline:hover {
+  background-color: var(--neon);
+  color: #000;
+}
+
+/* ── Background Images ──────────────────────────── */
+.hero-bg {
+  background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
+    url("https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80") center/cover no-repeat;
+}
+.cta-bg {
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)),
+    url("https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1600&q=80") center/cover no-repeat;
+}
+.about-img-1 { background: url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80") center/cover; }
+.about-img-2 { background: url("https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&q=80") center/cover; }
+.class-bg-1  { background: url("https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=80") center/cover; }
+.class-bg-2  { background: url("https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80") center/cover; }
+.class-bg-3  { background: url("https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80") center/cover; }
+
+/* ── Form Input ─────────────────────────────────── */
+.neon-input {
+  background: transparent;
+  border: 2px solid rgba(200,247,67,0.4);
+  color: #fff;
+  padding: 0.8rem 1.2rem;
+  border-radius: 4px;
+  font-family: "Montserrat", sans-serif;
+  outline: none;
+  min-width: 260px;
+  transition: border-color 0.3s;
+}
+.neon-input:focus { border-color: var(--neon); }
+.neon-input::placeholder { color: rgba(255,255,255,0.4); }
+
+/* ── Scroll Reveal ──────────────────────────────── */
+.reveal-up, .reveal-left, .reveal-right {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal-up.visible, .reveal-left.visible, .reveal-right.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.delay-1 { transition-delay: 0.15s; }
+.delay-2 { transition-delay: 0.30s; }
+.delay-3 { transition-delay: 0.45s; }
+
+/* ── Hamburger ──────────────────────────────────── */
+.bar { width: 26px; height: 2px; background: #fff; transition: all 0.3s; }
