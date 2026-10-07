@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
+const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const nodemailer = require("nodemailer");
@@ -22,7 +23,39 @@ if (fs.existsSync(distPath)) {
     app.use(express.static(path.join(__dirname, "../")));
 }
 
-// ── Database Setup ────────────────────────────────────
+// ── MongoDB Atlas Setup (for Vercel Serverless persistence) ──
+let isMongoConnected = false;
+
+const memberSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    phone: { type: String, default: "" },
+    description: { type: String, default: "" },
+    join_date: { type: Date, default: Date.now }
+});
+
+const MongoMember = mongoose.models.Member || mongoose.model("Member", memberSchema);
+
+async function connectMongoDB() {
+    if (isMongoConnected) return true;
+    if (!process.env.MONGODB_URI) return false;
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000,
+        });
+        isMongoConnected = true;
+        console.log("✅ Connected to MongoDB Atlas Cloud Database");
+        return true;
+    } catch (err) {
+        console.error("❌ MongoDB Atlas Connection Error:", err.message);
+        return false;
+    }
+}
+
+if (process.env.MONGODB_URI) {
+    connectMongoDB();
+}
+
+// ── SQLite Database Setup (for local development) ────────────
 const isVercel = Boolean(process.env.VERCEL);
 const dbDir = isVercel ? "/tmp" : __dirname;
 const dbPath = path.join(dbDir, "database.sqlite");
@@ -50,11 +83,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
         join_date   DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Add columns if missing (safe migrations)
     db.run(`ALTER TABLE members ADD COLUMN phone TEXT`, () => {});
     db.run(`ALTER TABLE members ADD COLUMN description TEXT`, () => {});
-    
-    // Performance index on join_date
     db.run(`CREATE INDEX IF NOT EXISTS idx_members_join_date ON members(join_date DESC)`, () => {});
 });
 
@@ -106,7 +136,7 @@ function sendOwnerEmail({ email, phone, description }) {
 }
 
 // ── API: Join Form ────────────────────────────────────
-app.post("/api/join", (req, res) => {
+app.post("/api/join", async (req, res) => {
     let { email, phone, description } = req.body;
 
     if (!email || typeof email !== "string") {
@@ -114,15 +144,29 @@ app.post("/api/join", (req, res) => {
     }
 
     email = email.trim().toLowerCase();
-    phone = phone ? phone.trim() : null;
-    description = description ? description.trim() : null;
+    phone = phone ? phone.trim() : "";
+    description = description ? description.trim() : "";
 
-    // Email regex validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: "Invalid email format" });
     }
 
+    // Try MongoDB Atlas first if configured
+    if (process.env.MONGODB_URI) {
+        const connected = await connectMongoDB();
+        if (connected) {
+            try {
+                const newMember = await MongoMember.create({ email, phone, description });
+                sendOwnerEmail({ email, phone, description });
+                return res.status(200).json({ message: "Successfully joined!", id: newMember._id.toString() });
+            } catch (err) {
+                console.error("MongoDB Insert Error:", err);
+            }
+        }
+    }
+
+    // Fallback to SQLite (local)
     db.run(
         `INSERT INTO members (email, phone, description) VALUES (?, ?, ?)`,
         [email, phone, description],
@@ -132,9 +176,7 @@ app.post("/api/join", (req, res) => {
                 return res.status(500).json({ error: "Database error" });
             }
 
-            // Async email notification to owner
             sendOwnerEmail({ email, phone, description });
-
             res.status(200).json({ message: "Successfully joined!", id: this.lastID });
         }
     );
@@ -155,7 +197,27 @@ app.post("/api/admin/login", (req, res) => {
 });
 
 // ── API: Get All Members (Admin) ──────────────────────
-app.get("/api/members", (req, res) => {
+app.get("/api/members", async (req, res) => {
+    if (process.env.MONGODB_URI) {
+        const connected = await connectMongoDB();
+        if (connected) {
+            try {
+                const docs = await MongoMember.find().sort({ join_date: -1 }).lean();
+                const formatted = docs.map(d => ({
+                    id: d._id.toString(),
+                    email: d.email,
+                    phone: d.phone || "",
+                    description: d.description || "",
+                    join_date: d.join_date
+                }));
+                return res.json(formatted);
+            } catch (err) {
+                console.error("MongoDB Fetch Error:", err);
+            }
+        }
+    }
+
+    // Fallback to SQLite
     db.all(`SELECT * FROM members ORDER BY join_date DESC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Database error" });
         res.json(rows);
@@ -163,8 +225,22 @@ app.get("/api/members", (req, res) => {
 });
 
 // ── API: Delete Member (Admin) ───────────────────────
-app.delete("/api/members/:id", (req, res) => {
+app.delete("/api/members/:id", async (req, res) => {
     const { id } = req.params;
+
+    if (process.env.MONGODB_URI) {
+        const connected = await connectMongoDB();
+        if (connected) {
+            try {
+                await MongoMember.findByIdAndDelete(id);
+                return res.json({ success: true, message: `Member #${id} deleted successfully` });
+            } catch (err) {
+                console.error("MongoDB Delete Error:", err);
+            }
+        }
+    }
+
+    // Fallback to SQLite
     db.run(`DELETE FROM members WHERE id = ?`, [id], function (err) {
         if (err) return res.status(500).json({ error: "Database error" });
         res.json({ success: true, message: `Member #${id} deleted successfully` });
