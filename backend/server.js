@@ -23,9 +23,24 @@ if (fs.existsSync(distPath)) {
 }
 
 // ── Database Setup ────────────────────────────────────
-const db = new sqlite3.Database(path.join(__dirname, "database.sqlite"), (err) => {
+const isVercel = Boolean(process.env.VERCEL);
+const dbDir = isVercel ? "/tmp" : __dirname;
+const dbPath = path.join(dbDir, "database.sqlite");
+
+if (isVercel) {
+    const sourceDb = path.join(__dirname, "database.sqlite");
+    if (fs.existsSync(sourceDb) && !fs.existsSync(dbPath)) {
+        try {
+            fs.copyFileSync(sourceDb, dbPath);
+        } catch (e) {
+            console.error("Failed to copy database to /tmp:", e);
+        }
+    }
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) return console.error("DB Error:", err);
-    console.log("✅ Connected to SQLite Database");
+    console.log("✅ Connected to SQLite Database at", dbPath);
 
     db.run(`CREATE TABLE IF NOT EXISTS members (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,7 +173,19 @@ app.delete("/api/members/:id", (req, res) => {
 
 // ── Admin Dashboard ───────────────────────────────────
 app.get("/admin", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/admin.html"));
+    const backendAdmin = path.join(__dirname, "public/admin.html");
+    const rootAdmin = path.join(__dirname, "../public/admin.html");
+    const distAdmin = path.join(__dirname, "../dist/admin.html");
+
+    if (fs.existsSync(rootAdmin)) {
+        return res.sendFile(rootAdmin);
+    } else if (fs.existsSync(backendAdmin)) {
+        return res.sendFile(backendAdmin);
+    } else if (fs.existsSync(distAdmin)) {
+        return res.sendFile(distAdmin);
+    } else {
+        return res.status(404).send("Admin panel HTML file not found.");
+    }
 });
 
 // ── Start Server ──────────────────────────────────────

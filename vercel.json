@@ -5,8 +5,8 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/admin",
-      "destination": "/api/index.js"
+      "source": "/admin(.*)",
+      "destination": "/admin.html"
     }
   ]
 }

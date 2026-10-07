@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITNESS YUG | Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1e1e1e;
+            --neon-accent: #c8f743;
+            --red-accent: #ff2a2a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --border-color: #2a2a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Login Overlay & Screen ────────────────────────── */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            background: radial-gradient(circle at center, rgba(200, 247, 67, 0.05) 0%, rgba(10, 10, 10, 0.95) 70%);
+        }
+
+        .login-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--neon-accent);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(200, 247, 67, 0.1);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: 2px;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-card h2 span {
+            color: var(--neon-accent);
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: #0d0d0d;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--neon-accent);
+            box-shadow: 0 0 10px rgba(200, 247, 67, 0.2);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 36px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .error-alert {
+            background: rgba(255, 42, 42, 0.15);
+            border: 1px solid var(--red-accent);
+            color: #ff6b6b;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            display: none;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--neon-accent);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Teko', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: #d6ff47;
+            box-shadow: 0 0 15px rgba(200, 247, 67, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* ── Dashboard Layout ────────────────────────────────── */
+        .dashboard-container {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--neon-accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        header h1 span {
+            color: var(--neon-accent);
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .user-badge {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--red-accent);
+            color: var(--red-accent);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--red-accent);
+            color: #fff;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── Stats Cards ────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--neon-accent);
+        }
+
+        .stat-card h3 {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--neon-accent);
+            font-family: 'Teko', sans-serif;
+            line-height: 1;
+        }
+
+        .stat-card .subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        /* ── Controls Toolbar ──────────────────────────────── */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .search-box input:focus {
+            border-color: var(--neon-accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-sec {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.65rem 1.1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sec:hover {
+            border-color: var(--neon-accent);
+            color: var(--neon-accent);
+        }
+
+        /* ── Data Table ────────────────────────────────────── */
+        .table-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background: #181818;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 1rem 1.2rem;
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: rgba(200, 247, 67, 0.03);
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .user-phone {
+            color: var(--neon-accent);
+            font-family: monospace;
+        }
+
+        .user-msg {
+            color: #bbb;
+            max-width: 280px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .user-date {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .btn-delete {
+            background: rgba(255, 42, 42, 0.1);
+            border: 1px solid rgba(255, 42, 42, 0.3);
+            color: #ff4d4d;
+            padding: 0.35rem 0.7rem;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: var(--red-accent);
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3.5rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* ── Footer ────────────────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── LOGIN SCREEN ──────────────────────────────────────── -->
+    <div id="login-section" class="login-wrapper">
+        <div class="login-card">
+            <h2>FITNESS<span>YUG</span></h2>
+            <p>Admin Control Portal — Please log in</p>
+
+            <div id="login-error" class="error-alert">Invalid username or password.</div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="Enter admin username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Enter admin password" required autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePassVisibility()">Show</button>
+                </div>
+
+                <button type="submit" id="btn-login-submit" class="btn-primary">LOGIN TO DASHBOARD</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── DASHBOARD SCREEN ─────────────────────────────────── -->
+    <div id="dashboard-section" class="dashboard-container">
+        <header>
+            <h1>FITNESS<span>YUG</span> ADMIN</h1>
+            <div class="user-nav">
+                <span class="user-badge" id="admin-user-display">👤 Admin</span>
+                <button class="btn-logout" onclick="handleLogout()">🚪 Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Stats Bar -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>TOTAL SIGN UPS</h3>
+                    <div class="value" id="stat-total">0</div>
+                    <div class="subtext">Registered gym members</div>
+                </div>
+                <div class="stat-card">
+                    <h3>TODAY'S JOINED</h3>
+                    <div class="value" id="stat-today" style="color: #4da6ff;">0</div>
+                    <div class="subtext">New sign-ups today</div>
+                </div>
+                <div class="stat-card" style="border-left-color: #00ff88;">
+                    <h3>DATABASE STATUS</h3>
+                    <div class="value" style="color: #00ff88; font-size: 1.6rem; margin-top: 5px;">CONNECTED</div>
+                    <div class="subtext">SQLite Database Active</div>
+                </div>
+            </div>
+
+            <!-- Toolbar Controls -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Search by email, phone, or goals..." oninput="filterMembers()">
+                </div>
+                <div class="action-btns">
+                    <button class="btn-sec" onclick="exportCSV()">📥 Export CSV</button>
+                    <button class="btn-sec" onclick="fetchMembers()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="6%">ID</th>
+                                <th width="24%">EMAIL</th>
+                                <th width="18%">PHONE</th>
+                                <th width="30%">MESSAGE / GOALS</th>
+                                <th width="14%">JOIN DATE</th>
+                                <th width="8%">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr><td colspan="6" class="empty-state">Loading user details...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            FITNESS YUG Admin Control Panel &copy; 2026. All rights reserved.
+        </footer>
+    </div>
+
+    <!-- ── SCRIPT LOGIC ──────────────────────────────────────── -->
+    <script>
+        let allMembersData = [];
+
+        // Check authentication state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('adminToken');
+            const username = sessionStorage.getItem('adminUser');
+
+            if (token) {
+                showDashboard(username || 'Admin');
+            } else {
+                showLogin();
+            }
+        });
+
+        function togglePassVisibility() {
+            const passInput = document.getElementById('password');
+            const btn = document.querySelector('.toggle-password');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                btn.innerText = 'Hide';
+            } else {
+                passInput.type = 'password';
+                btn.innerText = 'Show';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value;
+            const errorAlert = document.getElementById('login-error');
+            const submitBtn = document.getElementById('btn-login-submit');
+
+            errorAlert.style.display = 'none';
+            submitBtn.innerText = 'LOGGING IN...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    sessionStorage.setItem('adminToken', data.token);
+                    sessionStorage.setItem('adminUser', data.username);
+                    showDashboard(data.username);
+                } else {
+                    errorAlert.innerText = data.error || 'Invalid credentials. Try again.';
+                    errorAlert.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                errorAlert.innerText = 'Server connection error. Ensure backend is running.';
+                errorAlert.style.display = 'block';
+            } finally {
+                submitBtn.innerText = 'LOGIN TO DASHBOARD';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminUser');
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById('login-section').style.display = 'flex';
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('password').value = '';
+        }
+
+        function showDashboard(username) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dashboard-section').style.display = 'flex';
+            document.getElementById('admin-user-display').innerText = `👤 ${username}`;
+            fetchMembers();
+        }
+
+        async function fetchMembers() {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading user details...</td></tr>';
+
+            try {
+                const response = await fetch('/api/members');
+                allMembersData = await response.json();
+
+                updateStats(allMembersData);
+                renderTable(allMembersData);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="empty-state" style="color:#ff4d4d;">Error connecting to backend database.</td></tr>';
+            }
+        }
+
+        function updateStats(members) {
+            document.getElementById('stat-total').innerText = members.length;
+
+            const todayStr = new Date().toDateString();
+            const todayCount = members.filter(m => {
+                if (!m.join_date) return false;
+                return new Date(m.join_date).toDateString() === todayStr;
+            }).length;
+
+            document.getElementById('stat-today').innerText = todayCount;
+        }
+
+        function renderTable(members) {
+            const tableBody = document.getElementById('table-body');
+
+            if (!members || members.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">No registered members found.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            members.forEach(member => {
+                const dateObj = new Date(member.join_date);
+                const formattedDate = dateObj.toLocaleString('en-US', { 
+                    month: 'short', day: 'numeric', year: 'numeric', 
+                    hour: 'numeric', minute: '2-digit', hour12: true 
+                });
+
+                const row = `
+                    <tr>
+                        <td style="color: var(--text-muted); font-weight: 600;">#${member.id}</td>
+                        <td class="user-email">${escapeHtml(member.email)}</td>
+                        <td class="user-phone">${member.phone ? escapeHtml(member.phone) : '—'}</td>
+                        <td class="user-msg">${member.description ? escapeHtml(member.description) : '—'}</td>
+                        <td class="user-date">${formattedDate}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteMember(${member.id}, '${escapeHtml(member.email)}')">🗑️ Delete</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function filterMembers() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            if (!query) {
+                renderTable(allMembersData);
+                return;
+            }
+
+            const filtered = allMembersData.filter(m => {
+                const email = (m.email || '').toLowerCase();
+                const phone = (m.phone || '').toLowerCase();
+                const desc = (m.description || '').toLowerCase();
+                return email.includes(query) || phone.includes(query) || desc.includes(query);
+            });
+
+            renderTable(filtered);
+        }
+
+        async function deleteMember(id, email) {
+            if (!confirm(`Are you sure you want to delete user "${email}" (#${id})?`)) return;
+
+            try {
+                const res = await fetch(`/api/members/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    allMembersData = allMembersData.filter(m => m.id !== id);
+                    updateStats(allMembersData);
+                    filterMembers();
+                } else {
+                    alert('Failed to delete member.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error deleting member.');
+            }
+        }
+
+        function exportCSV() {
+            if (!allMembersData || allMembersData.length === 0) {
+                alert('No member data available to export.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,ID,Email,Phone,Message/Goals,Join Date\n";
+            allMembersData.forEach(m => {
+                const row = [
+                    m.id,
+                    `"${(m.email || '').replace(/"/g, '""')}"`,
+                    `"${(m.phone || '').replace(/"/g, '""')}"`,
+                    `"${(m.description || '').replace(/"/g, '""')}"`,
+                    `"${m.join_date || ''}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `fitness_yug_members_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
